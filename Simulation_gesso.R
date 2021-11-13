@@ -14,11 +14,24 @@ data = data.gen(sample_size=150, p=400,
                 family="gaussian", mode="strong_hierarchical")
 
 ## tune the model hyperparameters   
-tune_model = gesso.cv(data$G_train, data$E_train, data$Y_train, 
-                      grid_size=20, tolerance=1e-4,
-                      parallel=TRUE, nfold=4,
-                      normalize=TRUE, normalize_response=TRUE,
-                      seed=1)
+# tune_model = gesso.cv(data$G_train, data$E_train, data$Y_train, 
+#                       grid_size=20, tolerance=1e-4,
+#                       parallel=TRUE, nfold=4,
+#                       normalize=TRUE, normalize_response=TRUE,
+#                       seed=1)
+model <- gesso.fit(G = data$G_train, E = data$E_train, Y = data$Y_train,
+          normalize=TRUE,family = "gaussian", min_working_set_size = 30)
+model
+coefficients = gesso.coef(fit=gesso_fit$fit, lambda=gesso_fit$lambda_min)
+# predicted_value <-predict
+beta_0 = coefficients$beta_0
+beta_e = coefficients$beta_e
+beta_g = coefficients$beta_g
+beta_gxe = coefficients$beta_gxe
+new_G = draw[["xtest"]]
+new_E = draw[["etest"]]
+ytest_hat = gesso.predict(beta_0, beta_e, beta_g, beta_gxe, new_G, new_E)
+ytest_hat
 
 ## obtain interaction and main effect coefficietns corresponding to the best model
 coefficients = gesso.coef(fit=tune_model$fit, lambda=tune_model$lambda_min)
