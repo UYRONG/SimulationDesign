@@ -161,7 +161,7 @@ gessosplit <- new_method("Gesso Split", "Gesso Split",
                               method = function(model, draw) {
                                 tryCatch({
                                   gesso_fit <- gesso.fit(G = draw[["xtrain"]], E = draw[["etrain"]], Y = draw[["ytrain"]],
-                                                   normalize=TRUE,family = "gaussian", min_working_set_size = 30)
+                                                   normalize=TRUE, family = "gaussian", min_working_set_size = 30)
                                   # "gaussian" for continuous outcome and "binomial" for binary
                                   coefficients = gesso.coef(fit=gesso_fit$fit, lambda=gesso_fit$lambda_min)
                                   # predicted_value <-predict
