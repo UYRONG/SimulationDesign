@@ -82,7 +82,7 @@ generate_data_case1<-function(n,p,case){
                "x_valid" = X_valid, "y_valid" = Y_valid,
                "vnames" = vnames,
                "causal" = causal , "not_causal" = not_causal
-              )
+  )
   return (result)
 }
 # Third parameter indicate the case1
@@ -90,84 +90,3 @@ data<-generate_data_case1(100,30,1)
 # Third parameter indicate the case2
 # data<-generate_data_case1(150,300,2)
 # data<-generate_data_case1(500,2000,3)
-
-
-####
-#          glinternet ---------------------------------------
-####
-
-# Number of levels for each variable, of length nvars. Set to 1 for continuous variables.
-numLevels <- rep(1, 30)
-fit_glin <- glinternet(data$x_train, data$y_train, numLevels, nLambda = 100,
-                       verbose = F)
-ytest_hat<-predict(fit_glin,data$x_test,type="response" )
-
-
-class(fit_glin)
-
-
-msetest <- colMeans((data$y_test - ytest_hat)^2)
-msetest
-lambda.min.index <- as.numeric(which.min(msetest))
-lambda.min <- fit_glin$lambda[which.min(msetest)]
-lambda.min
-
-yvalid_hat <- predict(fit_glin, data$x_valid, lambda = lambda.min)
-dim(yvalid_hat)
-msevalid <- mean((data$y_valid - drop(yvalid_hat))^2)
-msevalid
-
-coeffs <- coef(fit_glin,lambdaIndex = lambda.min.index)
-coeffs
-
-####
-#          xyz ---------------------------------------
-####
-
-# library(devtools)
-# install_github("gathanei/xyz")
-# library(xyz)
-# 
-# # #construct a data matrix X
-# # X<-matrix(sample(c(-1,1),replace=T,n*p),n,p)
-# 
-# # xyz_regression(xyz_regression(X, Y, lambdas = NULL, n_lambda = 10, alpha = 0.9, L = 10,
-# # standardize = TRUE, standardize_response = TRUE))
-# fit_xyz<-xyz_regression(data$x_train,data$y_train,n_lambda=10,alpha=0.9,L=10)
-# fit_xyz
-# 
-# # without specified predict func
-# 
-# 
-# 
-# # # xyz_search(X, Y, L = 10, N = 100, binary = TRUE, negative = TRUE)
-# # # L: An integer indicating how many projection steps are performed.
-# # # N: A integer, controlling the number of pairs that will be returned in the end.
-# # # binary: A logical indicating if X is binary or continuous
-# # # negative A logical indicating if also negative interactions should be searched for.
-# # 
-# # result<-xyz_search(X,Y,L=10,N=10,binary=T,negative=T)
-# # 
-# # xyz
-# # 
-# # # gaussian response, continuous features
-# # Y = rnorm(100)
-# # X = matrix(rnorm(100*10), nrow=100)
-# # numLevels = rep(1, 10)
-# # fit = glinternet(X, Y, numLevels)
-# # 
-# # #binary response, continuous features
-# # Y = rbinom(100, 1, 0.5)
-# # fit = glinternet(X, Y, numLevels, family="binomial")
-# # 
-# # #binary response, categorical variables
-# # X = matrix(sample(0:2, 100*10, replace=TRUE), nrow=100)
-# # numLevels = rep(3, 10)
-# # fit = glinternet(X, Y, numLevels, family="binomial")
-# # 
-# # Y = rnorm(100)
-# # numLevels = sample(1:5, 10, replace=TRUE)
-# # X = sapply(numLevels, function(x) if (x==1)
-# #   rnorm(100) else sample(0:(x-1), 100, replace=TRUE))
-# # fit = glinternet(X, Y, numLevels)
-# # max(abs(fit$fitted - predict(fit, X)))

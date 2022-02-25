@@ -81,38 +81,34 @@ data<-generate_data_case1(100,30,1)
 # data<-generate_data_case1(150,300,2)
 # data<-generate_data_case1(500,2000,3)
 
+####
+#          hierNet ---------------------------------------
+####
 
-lassoBT_fit <- LassoBacktracking::LassoBT(data$x_train, data$y_train, iter_max=100)
-# predict must have the sma number of variable as during the training.
-# glinternet:predict(lassoBT_fit, data$x_test)
-ytest_hat<-predict(lassoBT_fit, data$x_test, type = "response")
-dim(ytest_hat)
-msetest <-10000000
-lamb_index <-10000000
-temp_lambda<-1000000
+install.packages("hierNet")
+library(hierNet)
+getNamespaceExports("hierNet")
 
-for (i in 1:dim(ytest_hat)[3]){
-  temp_msetest <- colMeans((data$y_test - ytest_hat[,,i])^2)
-  lambda.min.index <- as.numeric(which.min(temp_msetest))
-  min_lambda<- lassoBT_fit$lambda[which.min(temp_msetest)]
-  print(min_lambda)
-  if (min_lambda<temp_lambda){
-    msetest<- temp_msetest
-    lamb_index<-lambda.min.index
-    temp_lambda<-min_lambda
-  }
+# fit_hierNet<-hierNet(data$x_train, data$y_train, lam=50, strong=TRUE)
+
+# The reason for using hierNet.path instead of hierNet
+# hierNet_path can provide a list of lambda value, whie the hierNet you have to specify the value for lambda before using it
+fit_hierNet_path<-hierNet.path(data$x_train, data$y_train,strong=TRUE)
+# print(fit_hierNet_path)
+# fit_hierNet_path$lamlist
+ytest_hat <- predict(fit_hierNet_path, newx = data$x_test)
+# ytest_hat
+# dim(ytest_hat[1])
+# length(ytest_hat[1,])
+col_msetest<-c()
+for (i in 1:length(ytest_hat[1,])){
+  msetest <- mean((data$y_test - ytest_hat[,i])^2)
+  col_msetest<-append(col_msetest,msetest)
 }
+lambda_min_index<-which.min(col_msetest)
+lambda_min<-fit_hierNet_path$lamlist[which.min(col_msetest)]
 
-msetest
-lamb_index
-temp_lambda
-
-yvalid_hat<-predict(lassoBT_fit, data$x_valid, s=temp_lambda)
-yvalid_hat
-msevalid <- mean((data$y_valid - drop(yvalid_hat))^2)
+yvalid_hat <- predict(fit_hierNet_path, newx = data$x_valid)[,lambda_min_index]
+msevalid <- mean((data$y_valid - yvalid_hat)^2)
+length(yvalid_hat)
 msevalid
-
-getNamespaceExports("LassoBacktracking")
-
-coef<-coef(lassoBT_fit, s=temp_lambda)
-dim(coef)
