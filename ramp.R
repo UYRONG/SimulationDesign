@@ -91,49 +91,33 @@ data<-generate_data_case1(100,30,1)
 # data<-generate_data_case1(150,300,2)
 # data<-generate_data_case1(500,2000,3)
 
-####
-#          hierNet ---------------------------------------
-####
-
-install.packages("hierNet")
-library(hierNet)
-getNamespaceExports("hierNet")
-
-# fit_hierNet<-hierNet(data$x_train, data$y_train, lam=50, strong=TRUE)
-
-# The reason for using hierNet.path instead of hierNet
-# hierNet_path can provide a list of lambda value, whie the hierNet you have to specify the value for lambda before using it
-fit_hierNet_path<-hierNet.path(data$x_train, data$y_train,strong=TRUE)
-# print(fit_hierNet_path)
-# fit_hierNet_path$lamlist
-ytest_hat <- predict(fit_hierNet_path, newx = data$x_test)
-# ytest_hat
-# dim(ytest_hat[1])
-# length(ytest_hat[1,])
-col_msetest<-c()
-for (i in 1:length(ytest_hat[1,])){
-  msetest <- mean((data$y_test - ytest_hat[,i])^2)
-  col_msetest<-append(col_msetest,msetest)
+# ----ramp ------
+install.packages("RAMP")
+library(RAMP)
+fit_ramp<-RAMP(data$x_train,data$y_train,family = "gaussian", penalty = "LASSO", gamma = NULL,
+               inter = TRUE, hier = "Strong", eps = 1e-15, tune = "EBIC",
+               penalty.factor = rep(1, ncol(data$x_train)), inter.penalty.factor = 1, 
+               max.iter = 100, n.lambda = 100,
+               ebic.gamma = 1, refit = TRUE, trace = FALSE)
+y_test_hat<-predict(fit_ramp,data$x_test,type ="response",allpath=T)
+length(y_test_hat[1,])
+mse_min<-10000
+mse_index<- -1
+ 
+for (i in (1:(length(y_test_hat[1,])-1))){
+    print(i)
+    mse<-mean((y_test_hat[,i]-data$y_test)^2)
+    print(mse)
+    if (mse < mse_min){
+      mse_min <- mse
+      mse_index<-i
+    }
 }
-lambda_min_index<-which.min(col_msetest)
-lambda_min<-fit_hierNet_path$lamlist[which.min(col_msetest)]
+mse_min
+mse_index
 
-yvalid_hat <- predict(fit_hierNet_path, newx = data$x_valid)[,lambda_min_index]
-msevalid <- mean((data$y_valid - yvalid_hat)^2)
-length(yvalid_hat)
-msevalid
+y_valid_hat<-predict(fit_ramp,data$x_valid,type ="response",allpath=T)[,mse_index]
+mse_valid<-mean((y_valid_hat-data$y_valid)^2)
+mse_valid
 
-# bp:p-vector of estimated "positive part" main effect (p=# features)
-# bn:p-vector of estimated "positive part" main effect (p=# features)
-# bp-bn:overall main effect estimated
-beta_main<-fit_hierNet_path$bp[,lambda_min_index]-fit_hierNet_path$bn[,lambda_min_index]#overall main effect estimated
-as.vector(beta_main)
-beta_main
-fit_hierNet_path$th[,,lambda_min_index]
-
-
-
-
-
-
-
+fit_ramp

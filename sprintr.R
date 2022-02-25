@@ -91,49 +91,9 @@ data<-generate_data_case1(100,30,1)
 # data<-generate_data_case1(150,300,2)
 # data<-generate_data_case1(500,2000,3)
 
-####
-#          hierNet ---------------------------------------
-####
 
-install.packages("hierNet")
-library(hierNet)
-getNamespaceExports("hierNet")
-
-# fit_hierNet<-hierNet(data$x_train, data$y_train, lam=50, strong=TRUE)
-
-# The reason for using hierNet.path instead of hierNet
-# hierNet_path can provide a list of lambda value, whie the hierNet you have to specify the value for lambda before using it
-fit_hierNet_path<-hierNet.path(data$x_train, data$y_train,strong=TRUE)
-# print(fit_hierNet_path)
-# fit_hierNet_path$lamlist
-ytest_hat <- predict(fit_hierNet_path, newx = data$x_test)
-# ytest_hat
-# dim(ytest_hat[1])
-# length(ytest_hat[1,])
-col_msetest<-c()
-for (i in 1:length(ytest_hat[1,])){
-  msetest <- mean((data$y_test - ytest_hat[,i])^2)
-  col_msetest<-append(col_msetest,msetest)
-}
-lambda_min_index<-which.min(col_msetest)
-lambda_min<-fit_hierNet_path$lamlist[which.min(col_msetest)]
-
-yvalid_hat <- predict(fit_hierNet_path, newx = data$x_valid)[,lambda_min_index]
-msevalid <- mean((data$y_valid - yvalid_hat)^2)
-length(yvalid_hat)
-msevalid
-
-# bp:p-vector of estimated "positive part" main effect (p=# features)
-# bn:p-vector of estimated "positive part" main effect (p=# features)
-# bp-bn:overall main effect estimated
-beta_main<-fit_hierNet_path$bp[,lambda_min_index]-fit_hierNet_path$bn[,lambda_min_index]#overall main effect estimated
-as.vector(beta_main)
-beta_main
-fit_hierNet_path$th[,,lambda_min_index]
-
-
-
-
-
-
-
+## ------sprintr-----
+install.packages("sprintr")
+library(sprintr)
+fit_sprintr<-sprinter(data$x_train,data$y_train)
+y_test_hat<-predict(fit_sprintr,data$x_test)

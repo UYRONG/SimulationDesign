@@ -95,30 +95,68 @@ data<-generate_data_case1(100,30,1)
 ####
 #          glinternet ---------------------------------------
 ####
+install.packages("glinternet")
+library(glinternet)
+fitGL <- glinternet(X = data$x_train, Y = data$y_train,
+                    numLevels = rep(1, ncol(data$x_train)),
+                    nLambda = 100,
+                    verbose = F)
+
+ytest_hat <- predict(fitGL, X = data$x_test)
+msetest <- colMeans((data$y_test - ytest_hat)^2)
+lambda.min.index <- as.numeric(which.min(msetest))
+lambda.min <- fitGL$lambda[which.min(msetest)]
+
+yvalid_hat <- predict(fitGL, X = data$x_valid, lambda = lambda.min)
+msevalid <- mean((data$y_valid - drop(yvalid_hat))^2)
+
+# nzcoef <- coef(fit, s = lambda.min)[nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
+
+tc <- coef(fitGL, lambdaIndex = lambda.min.index)
+mains <- colnames(draw[["xtrain_lasso"]])[tc[[1]]$mainEffects$cont]
+inters <- paste0(colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$contcont[,2]],":E")
+
+return_list<-list(beta = NULL,
+            vnames = draw[["vnames_lasso"]],
+            nonzero_coef = NULL,
+            active = c(mains, inters),
+            not_active = setdiff(draw[["vnames"]], c(mains, inters)),
+            yvalid_hat = yvalid_hat,
+            msevalid = msevalid,
+            causal = draw[["causal"]],
+            not_causal = draw[["not_causal"]],
+            yvalid = draw[["yvalid"]])
+
+
+
+
+
+
+
 
 # Number of levels for each variable, of length nvars. Set to 1 for continuous variables.
-numLevels <- rep(1, 30)
-fit_glin <- glinternet(data$x_train, data$y_train, numLevels, nLambda = 100,
-                       verbose = F)
-ytest_hat<-predict(fit_glin,data$x_test,type="response" )
-
-
-class(fit_glin)
-
-
-msetest <- colMeans((data$y_test - ytest_hat)^2)
-msetest
-lambda.min.index <- as.numeric(which.min(msetest))
-lambda.min <- fit_glin$lambda[which.min(msetest)]
-lambda.min
-
-yvalid_hat <- predict(fit_glin, data$x_valid, lambda = lambda.min)
-dim(yvalid_hat)
-msevalid <- mean((data$y_valid - drop(yvalid_hat))^2)
-msevalid
-
-coeffs <- coef(fit_glin,lambdaIndex = lambda.min.index)
-coeffs
+# numLevels <- rep(1, 30)
+# fit_glin <- glinternet(data$x_train, data$y_train, numLevels, nLambda = 100,
+#                        verbose = F)
+# ytest_hat<-predict(fit_glin,data$x_test,type="response" )
+# 
+# 
+# class(fit_glin)
+# 
+# 
+# msetest <- colMeans((data$y_test - ytest_hat)^2)
+# msetest
+# lambda.min.index <- as.numeric(which.min(msetest))
+# lambda.min <- fit_glin$lambda[which.min(msetest)]
+# lambda.min
+# 
+# yvalid_hat <- predict(fit_glin, data$x_valid, lambda = lambda.min)
+# dim(yvalid_hat)
+# msevalid <- mean((data$y_valid - drop(yvalid_hat))^2)
+# msevalid
+# 
+# coeffs <- coef(fit_glin,lambdaIndex = lambda.min.index)
+# coeffs
 
 ####
 #          xyz ---------------------------------------

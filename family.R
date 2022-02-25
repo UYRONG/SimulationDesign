@@ -91,49 +91,45 @@ data<-generate_data_case1(100,30,1)
 # data<-generate_data_case1(150,300,2)
 # data<-generate_data_case1(500,2000,3)
 
-####
-#          hierNet ---------------------------------------
-####
+##
+## ------family-------
+##
 
-install.packages("hierNet")
-library(hierNet)
-getNamespaceExports("hierNet")
+install.packages("FAMILY")
+library(FAMILY)
 
-# fit_hierNet<-hierNet(data$x_train, data$y_train, lam=50, strong=TRUE)
+alphas<- c(0.01,0.5,0.99)
+lambdas<- seq(0.1,1,length = 50)
 
-# The reason for using hierNet.path instead of hierNet
-# hierNet_path can provide a list of lambda value, whie the hierNet you have to specify the value for lambda before using it
-fit_hierNet_path<-hierNet.path(data$x_train, data$y_train,strong=TRUE)
-# print(fit_hierNet_path)
-# fit_hierNet_path$lamlist
-ytest_hat <- predict(fit_hierNet_path, newx = data$x_test)
-# ytest_hat
-# dim(ytest_hat[1])
-# length(ytest_hat[1,])
-col_msetest<-c()
-for (i in 1:length(ytest_hat[1,])){
-  msetest <- mean((data$y_test - ytest_hat[,i])^2)
-  col_msetest<-append(col_msetest,msetest)
+fit_family<- FAMILY(data$x_train,data$x_train, data$y_train, lambdas ,
+                     alphas, quad = TRUE,iter=500, verbose = TRUE )
+yhat<- predict(fit_family, data$x_test, data$x_test)
+
+opt_value_alpha<-alphas[1]
+opt_value_lambdas<-lambdas[1]
+opt_index_alpha<- -1
+opt_index_lambdas<- -1
+mse_min <- 9999
+
+mean(yhat[,2,3]-data$y_test)^2
+
+for(i in (1:length(alphas))){
+  for (j in (1:length(lambdas))){
+    mse<-mean(yhat[,j,i]-data$y_test)^2
+    if (mse < mse_min){
+      mse_min<-mse
+      opt_value_alpha<-alphas[i]
+      opt_value_lambdas<-lambdas[j]
+      opt_index_alpha<-i
+      opt_index_lambdas<-j
+    }
+  }
 }
-lambda_min_index<-which.min(col_msetest)
-lambda_min<-fit_hierNet_path$lamlist[which.min(col_msetest)]
+opt_value_alpha
+opt_value_lambdas
+coef<-coef(fit_family)[[opt_index_alpha]][[opt_index_lambdas]]
 
-yvalid_hat <- predict(fit_hierNet_path, newx = data$x_valid)[,lambda_min_index]
-msevalid <- mean((data$y_valid - yvalid_hat)^2)
-length(yvalid_hat)
-msevalid
-
-# bp:p-vector of estimated "positive part" main effect (p=# features)
-# bn:p-vector of estimated "positive part" main effect (p=# features)
-# bp-bn:overall main effect estimated
-beta_main<-fit_hierNet_path$bp[,lambda_min_index]-fit_hierNet_path$bn[,lambda_min_index]#overall main effect estimated
-as.vector(beta_main)
-beta_main
-fit_hierNet_path$th[,,lambda_min_index]
-
-
-
-
-
+yvalid<- predict(fit_family, data$x_valid, data$x_valid)
+msevalid<-mean(yvalid[,opt_index_lambdas,opt_index_alpha]-data$y_test)^2
 
 
