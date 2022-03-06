@@ -93,10 +93,35 @@ data<-generate_data_case1(100,30,1)
 
 
 ## ------ bolt ------
-
+install.packages("RcppArmadillo")
+install.packages("Rcpp")
 install.packages("BOLT-SSI")
+install.packages("devtools")
 library(devtools)
 install_github("daviddaigithub/BOLTSSIRR")
+
+library(BOLTSSIRR)
+set.seed(0) 
+p=300;
+n=100;
+rho=0.5 
+H<-abs(outer(1:p,1:p,"-")) 
+covxx=rho^H
+cholcov = chol(covxx)
+x0 = matrix(rnorm(n*p), n, p) 
+x = x0%*%cholcov
+#gaussian response
+set.seed(0) 
+y=2*x[,1]+2*x[,8]+3*x[,1]*x[,8]+rnorm(n) 
+model1=BOLT_SSI(x,y)
+head(model1)
+#binary response
+set.seed(40)
+feta = 2*x[,1]+2*x[,8]+3*x[,1]*x[,8]; 
+fprob = exp(feta)/(1+exp(feta))
+y = rbinom(n, 1, fprob) 
+model2=BOLT_SSI(x,y)
+head(model2)
 
 
 install.packages("Rcpp", repos="https://rcppcore.github.io/drat")

@@ -93,7 +93,9 @@ data<-generate_data_case1(100,30,1)
 
 
 ## ------sprintr-----
-install.packages("sprintr")
-library(sprintr)
-fit_sprintr<-sprinter(data$x_train,data$y_train)
-y_test_hat<-predict(fit_sprintr,data$x_test)
+# install.packages("sprintr")
+# library(sprintr)
+# fit_sprintr<-sprinter(data$x_train,data$y_train)
+# y_test_hat<-predict(fit_sprintr,data$x_test)
+
+devtools::install_github("hugogogo/sprintr", build_vignettes = TRUE)

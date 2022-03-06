@@ -1,6 +1,14 @@
 install.packages("/Users/rongyu/Desktop/pliable", repos = NULL, type="source")
 library(pliable)
 
+
+
+
+
+
+
+
+
 install.packages("devtools")
 library(devtools)
 install_github("cran/pliable")

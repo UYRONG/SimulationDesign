@@ -131,6 +131,9 @@ as.vector(beta_main)
 beta_main
 fit_hierNet_path$th[,,lambda_min_index]
 
+data$vnames
+
+
 
 
 

@@ -120,4 +120,7 @@ y_valid_hat<-predict(fit_ramp,data$x_valid,type ="response",allpath=T)[,mse_inde
 mse_valid<-mean((y_valid_hat-data$y_valid)^2)
 mse_valid
 
-fit_ramp
+fit_ramp$beta.m
+coef(fit_ramp)
+fit_ramp$beta.i.mat[[37]]
+fit_ramp$beta.m.mat[,37]
