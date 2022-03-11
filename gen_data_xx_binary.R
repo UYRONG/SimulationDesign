@@ -52,7 +52,7 @@ y_function<-function(x,n,case){
   }
   return(y)
 }
-generate_data_case1<-function(n,p,case){
+generate_data_case3<-function(n,p,case){
   # test and training set
   X <- matrix(rnorm(n*p), nrow=n)
   X <- scale(X,TRUE,TRUE)
@@ -86,57 +86,7 @@ generate_data_case1<-function(n,p,case){
   return (result)
 }
 # Third parameter indicate the case1
-data<-generate_data_case1(100,30,1)
+data<-generate_data_case3(100,30,1)
 # Third parameter indicate the case2
 # data<-generate_data_case1(150,300,2)
 # data<-generate_data_case1(500,2000,3)
-
-
-## ------ bolt ------
-install.packages("RcppArmadillo")
-install.packages("Rcpp")
-# install.packages("BOLT-SSI")
-install.packages("devtools")
-library(devtools)
-install_github("daviddaigithub/BOLTSSIRR")
-
-library(BOLTSSIRR)
-
-bolt_fit<-BOLT_SSI(data$x_train,data$y_train)
-head(bolt_fit)
-class(data$x_test)
-sth<-data$x_test
-
-bolt_fit1<-BOLT_SSI_RR(data$x_train,data$y_train)
-bolt_fit1
-
-yhat<-BOLT_Predict(sth,bolt_fit1)
-
-model3=CV_BOLT_SSI_RR(data$x_train,data$y_train,extra_pairs=30,nfold=5)
-
-yhat<-BOLT_Predict(sth,model3)
-
-set.seed(0) 
-p=300;
-n=100;
-rho=0.5 
-H<-abs(outer(1:p,1:p,"-")) 
-covxx=rho^H
-cholcov = chol(covxx)
-x0 = matrix(rnorm(n*p), n, p) 
-x = x0%*%cholcov
-#gaussian response
-set.seed(0) 
-y=2*x[,1]+2*x[,8]+3*x[,1]*x[,8]+rnorm(n) 
-model1=BOLT_SSI(x,y)
-head(model1)
-#binary response
-set.seed(40)
-feta = 2*x[,1]+2*x[,8]+3*x[,1]*x[,8]; 
-fprob = exp(feta)/(1+exp(feta))
-y = rbinom(n, 1, fprob) 
-model2=BOLT_SSI(x,y)
-head(model2)
-
-
-install.packages("Rcpp", repos="https://rcppcore.github.io/drat")

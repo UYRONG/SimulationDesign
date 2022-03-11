@@ -93,9 +93,36 @@ data<-generate_data_case1(100,30,1)
 
 
 ## ------sprintr-----
-# install.packages("sprintr")
-# library(sprintr)
-# fit_sprintr<-sprinter(data$x_train,data$y_train)
-# y_test_hat<-predict(fit_sprintr,data$x_test)
 
+install.packages("rmarkdown")
+
+install.packages("devtools")
 devtools::install_github("hugogogo/sprintr", build_vignettes = TRUE)
+library(sprintr)
+# devtools::install_github("hugogogo/sprintr", build_vignettes = TRUE)
+
+fit_sprintr<-sprinter(data$x_train,data$y_train)
+y_test_hat<-predict(fit_sprintr,data$x_test)
+
+msetest <- mean((data$y_train - y_test_hat)^2)
+msetest<- 100000
+lambda1_min<- -1
+lambda3_min<- -1
+for (i in (1:length(fit_sprintr$lambda1))){
+  for (j in (1:(dim(fit_sprintr$lambda3)[1]))){
+    temp<-mean((data$y_train - y_test_hat[[i]][,j])^2)
+    if(temp < msetest){
+      msetest<-temp
+      lambda1_min<-i
+      lambda3_min<-j
+    }
+  }
+}
+msetest
+lambda1_min
+lambda3_min
+y_valid_hat <- predict(fit_sprintr,data$x_valid)[[lambda1_min]][,lambda3_min]
+msevalid<-mean((data$y_valid - y_valid_hat)^2)
+msevalid
+print(fit_sprintr)[lambda3_min,]
+print(fit_sprintr,which=3)
