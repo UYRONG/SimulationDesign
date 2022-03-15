@@ -5,11 +5,11 @@ sqrerr <- new_metric("sqrerr", "squared error",
                        colMeans(as.matrix(out$beta - model$true_beta)^2)
                      })
 
-mse <- new_metric("mse", "Test Set MSE",
-                  metric = function(model, out) {
-                    # as.numeric(sqrt(crossprod(out$y - out$yhat)))
-                    as.numeric(crossprod(out$ytest - out$yhat_test) / (length(out$ytest)))
-                  })
+# mse <- new_metric("mse", "Test Set MSE",
+#                   metric = function(model, out) {
+#                     # as.numeric(sqrt(crossprod(out$y - out$yhat)))
+#                     as.numeric(crossprod(out$ytest - out$yhat_test) / (length(out$ytest)))
+#                   })
 
 msevalid <- new_metric("mse", "Validation Set MSE",
                        metric = function(model, out) {
@@ -17,11 +17,6 @@ msevalid <- new_metric("mse", "Validation Set MSE",
                          as.numeric(out$msevalid)
                        })
 
-
-cvmse <- new_metric("cvmse", "10-Fold CV MSE",
-                    metric = function(model, out) {
-                      as.numeric(out$cvmse)
-                    })
 
 tpr <- new_metric("tpr", "True Positive Rate",
                   metric = function(model, out) {

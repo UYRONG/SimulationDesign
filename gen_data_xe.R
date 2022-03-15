@@ -21,7 +21,6 @@ y_function<-function(n, p, corr=0, betaE = 2, SNR = 2, case){
     Xall <- cbind(X1, X2, X3, X4, X5, X)
     
     colnames(Xall) <- paste0("X", seq_len(p))
-    
     f1 <- function(x) 3 * x
     f2 <- function(x) -3 * x
     f3 <- function(x) -3 * x
@@ -69,14 +68,14 @@ y_function<-function(n, p, corr=0, betaE = 2, SNR = 2, case){
       f6.inter(X6,E) + f7.inter(X7,E) +
       f8.inter(X8,E) + rnorm(n)
   }
-  return(list(x = X, y = Y ,e = E))
+  return(list(x = Xall, y = Y ,e = E))
 }
+
 generate_data_case2<-function(n,p,betaE,case){
   # test and training set
   # X <- matrix(rnorm(n*p), nrow=n)
   # X <- scale(X,TRUE,TRUE)
   gendata <- y_function(n,p,0,0,betaE,case)
-  
   # Y <- y_function(n,p,0,0,2,case)
   split_value <- n*0.8
   m <- 2*n

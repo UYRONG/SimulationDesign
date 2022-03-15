@@ -76,7 +76,7 @@ y_function<-function(n, p, corr=0, betaE = 2, SNR = 2, case){
       f6.inter(X6,E) + f7.inter(X7,E) +
       f8.inter(X8,E) + rnorm(n)
   }
-  return(list(x = X, y = Y ,e = E))
+  return(list(x = Xall, y = Y ,e = E))
 }
 generate_data_case2<-function(n,p,betaE,case){
   # test and training set
@@ -93,23 +93,32 @@ generate_data_case2<-function(n,p,betaE,case){
   
   main <- paste0("X", seq_len(p))
   vnames<-c(main)
+  vnames<-append(vnames, "E")
   
   for (i in (1:(length(main)))){
     conc<-paste(main[i], "E", sep = ":")
     vnames<-append(vnames, conc)
   }
+  true_beta<-matrix(0,nrow=(length(vnames)),ncol=1)
+  true_beta_list<-vnames
+  rownames(true_beta) <- true_beta_list
+  colnames(true_beta) <- "true value"
   if (case ==1){
-    causal <- c("X1","X2","X3","X4","X5","X4:E","X5:E")
-  }else if (case ==2){
-    causal <- c("X1","X2","X3","X4","X5","X6","X7","X8","X9","X10","X4:E","X5:E","X6:E","X7:E","X8:E")
-  }else if (case ==3){
-    causal <- c("X1","X2","X3","X4","X5","X6","X7","X8","X9","X10","X4:E","X5:E","X6:E","X7:E","X8:E")
+    causal <- c("X1","X2","X3","X4","X5","E","X4:E","X5:E")
+    true_beta[1:5,1]<-c(3,-3,-3,3,3)
+    true_beta[(p+5):(p+6),1]<-c(1.5,-1.5)
+    true_beta["E",1]<-betaE
+  }else{
+    causal <- c("X1","X2","X3","X4","X5","X6","X7","X8","X9","X10","E","X4:E","X5:E","X6:E","X7:E","X8:E")
+    true_beta[1:10,1]<-c(3,-3,-3,3,3,3,-3,-3,3,3)
+    true_beta[(p+5):(p+9),]<-c(1.5,-1.5,1.5,-1.5,1.5)
+    true_beta["E",1]<-betaE
   }
   not_causal <- setdiff(vnames, causal)
   result<-list("x_train" = gendata$x[1:split_value,] , "y_train" = gendata$y[1:split_value], "e_train" = gendata$e[1:split_value] ,
                "x_test" = gendata$x[(split_value+1):n,], "y_test" = gendata$y[(split_value+1):n],"e_test" = gendata$e[(split_value+1):n],
                "x_valid" = gendata_valid$x, "y_valid" = gendata_valid$y, "e_valid" = gendata_valid$e,
-               "vnames" = vnames, "betaE"= betaE,
+               "vnames" = vnames, "betaE"= betaE,"true_beta" = true_beta,
                "causal" = causal , "not_causal" = not_causal
   )
   return (result)
@@ -117,6 +126,8 @@ generate_data_case2<-function(n,p,betaE,case){
 betaE <- 2
 # Third parameter indicate the case1
 data<-generate_data_case2(100,30,betaE,1)
+data$true_beta
+
 
 fit_model <- gesso.fit(G = data$x_train, E = data$e_train, Y = data$y_train,
                    normalize=TRUE,family = "gaussian", min_working_set_size = 30)
@@ -142,9 +153,80 @@ for(i in 1:(length(fit_model$lambda_1))){
 msetest
 lambda1_index
 lambda2_index
-min_lambdapair <- tibble(lambda_1 =fit_model$lambda_1[lambda1_index],lambda_2 = fit_model$lambda_2[lambda1_index])
+min_lambdapair <- tibble(lambda_1 = fit_model$lambda_1[lambda1_index],lambda_2 = fit_model$lambda_2[lambda1_index])
 coeff <- gesso.coef(fit_model,min_lambdapair)
 y_valid_hat <- gesso.predict(coeff$beta_0,coeff$beta_e,coeff$beta_g,coeff$beta_gxe,data$x_valid, data$e_valid)
 mse_valid <- mean((y_valid_hat-data$y_valid)^2)
 
 coeff
+data$vnames
+
+active_name_list<-c()
+beta_Matrix<-matrix(0,nrow=length(data$vnames)+1,ncol=1)
+rowname_list<-append("(Intercept)",data$vnames)
+rownames(beta_Matrix) <- rowname_list
+colnames(beta_Matrix) <- "1"
+beta_Matrix[1,]<-coeff$beta_0
+
+# loop for main effect
+for (i in (1:(length(coeff$beta_g))) ){
+  if ((coeff$beta_g)[i] !=0 ){
+    vanme<-paste("X",i,sep="")
+    active_name_list<-append(active_name_list,vanme)
+    beta_Matrix[i+1,]<-(coeff$beta_g)[i]
+  }
+}
+# betaE
+if ((coeff$beta_e) !=0 ){
+  active_name_list<-append(active_name_list,"E")
+  beta_Matrix[length(coeff$beta_g)+2,]<-coeff$beta_e
+}
+# loop for interaction effect
+for (i in (1:(length(coeff$beta_gxe))) ){
+  if ((coeff$beta_gxe)[i] !=0 ){
+    xname<-paste("X",i,sep="")
+    vanme<-paste(xname,":E",sep="")
+    active_name_list<-append(active_name_list,vanme)
+    beta_Matrix[length(coeff$beta_g)+2+i,]<-coeff$beta_gxe[i]
+  }
+}
+
+
+active_name_list
+beta_Matrix
+
+beta_Matrix
+
+setdiff(data$vnames, active_name_list)
+class(matrix(0,nrow=length(data$vnames),ncol=1))
+beta_Matrix<-matrix(0,nrow=length(data$vnames)+1,ncol=1)
+rownames(beta_Matrix) <- append(data$vnames,"(Intercept)")
+colnames(beta_Matrix) <- 1
+beta_Matrix
+typeof(nzcoef)
+class(nzcoef)
+
+nzout2 <- filter(beta_Matrix, "1" != 0)
+nzout2
+active_name_list
+nactive_name_list<-setdiff(data$vnames,active_name_list)
+nactive_name_list
+nz<-as.matrix(beta_Matrix[beta_Matrix[, 1] != 0, ])
+nz
+
+beta<-as.matrix(beta_Matrix[-1,1])
+beta
+
+true_beta <- matrix(rep(0, ncol(design), ncol = 1))
+dimnames(true_beta)[[1]] <- rownames(design)
+# the first 5 main effects and the first 2 interactions are active
+true_beta[c(1:(5*df),(p * df + 2):(p * df + 1 + 2 * df) ),1] <- rnorm(n = 7 * df)
+true_beta["X_E",] <- betaE
+
+true_beta<-matrix(0,nrow=20,ncol=1)
+true_beta_list<-append("(Intercept)",data$vnames)
+rownames(true_beta) <- true_beta_list
+colnames(true_beta) <- "true value"
+true_beta[2:6,1]<-c(3,-3,-3,3,3)
+true_beta[p+2:p+3,]<-c(1.5,-1.5)
+

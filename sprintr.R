@@ -125,4 +125,7 @@ y_valid_hat <- predict(fit_sprintr,data$x_valid)[[lambda1_min]][,lambda3_min]
 msevalid<-mean((data$y_valid - y_valid_hat)^2)
 msevalid
 print(fit_sprintr)[lambda3_min,]
-print(fit_sprintr,which=3)
+object1<-print(fit_sprintr,which=3)
+
+fit_sprintr$step3[[1]]$coef[,3]
+

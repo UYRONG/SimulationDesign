@@ -73,7 +73,7 @@ y_function<-function(n, p, corr=0, betaE = 2, SNR = 2, case){
       f6.inter(X6,E) + f7.inter(X7,E) +
       f8.inter(X8,E) + rnorm(n)
   }
-  return(list(x = X, y = Y ,e = E))
+  return(list(x = Xall, y = Y ,e = E))
 }
 generate_data_case2<-function(n,p,betaE,case){
   # test and training set
@@ -119,20 +119,31 @@ fit <- sail(x = data$x_train, y = data$y_train, e = data$e_train,
             basis = function(i) i)
 
 ytest_hat <- predict(fit, newx = data$x_test, newe = data$e_test)
+ytest_hat
 msetest <- colMeans((data$y_test - ytest_hat)^2)
 lambda.min.index <- as.numeric(which.min(msetest))
 lambda.min <- fit$lambda[which.min(msetest)]
 
 yvalid_hat <- predict(fit, newx = data$x_valid, newe = data$e_valid, s = lambda.min)
+yvalid_hat
 msevalid <- mean((data$y_valid - drop(yvalid_hat))^2)
 
 nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
 
-beta = coef(fit, s = lambda.min)[-1,,drop=F]
+as.matrix(coef(fit, s = lambda.min))[-1,,drop=F]
+
+beta = coef(fit, s = lambda.min)
+dim(data$x_train)
+
 nzcoef
 fit$active
 fit$active[[lambda.min.index]]
 
+fit$active[[lambda.min.index]]
+
+coef(fit, s = lambda.min)[-1,,drop=F]
+nzcoef
+active
 # return(list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
 #             # fit = fit,
 #             vnames = draw[["vnames"]],
