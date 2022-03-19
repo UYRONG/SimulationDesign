@@ -37,9 +37,9 @@ sim7 <- new_simulation(name = "2022_sim7",
                       dir = ".") %>%
   generate_model(make_XE_data_split,seed = 1234,
                  n = 100, p=30, corr= 0, betaE = 2, SNR = 2, case = 1,
-                 lambda.type = "lambda.min", parameterIndex=list(1), vary_along = "parameterIndex") %>%
+                 lambda.type = "lambda.min") %>%
 
-  simulate_from_model(nsim = 6, index = 1:10) %>%
+  simulate_from_model(nsim = 1, index = 1:2) %>%
   run_method(list(gessosplit,sailsplit,glinternetsplit_XE),
              parallel = list(socket_names = 35,
                              libraries = c("splines",

@@ -150,8 +150,11 @@ glinternetsplit_XE <- new_method("glinternetsplit_XE", "glinternetsplit XE",
                             mains <- colnames(draw[["x_train_lasso"]])[fit_coef[[1]]$mainEffects$cont]
                             inters <- paste0(colnames(draw[["x_train_lasso"]])[fit_coef[[1]]$interactions$contcont[,2]],":E")
                             
-                            beta_Matrix<-matrix(0,nrow=length(draw[["vnames_lasso"]]),ncol=1) # variable matrix with name and value
-                            rownames(beta_Matrix) <- draw[["vnames_lasso"]]
+                            beta_Matrix<-matrix(0,nrow=length(draw[["vnames_lasso"]])+1,ncol=1)
+                            rowname_list<-append("(Intercept)",draw[["vnames"]]) # keep the vnames order the same as other methods
+                            rownames(beta_Matrix) <- rowname_list
+                            colnames(beta_Matrix) <- "1"
+                            beta_Matrix[1,]<- 0
   
                             for (i in (1:length(mains))){
                               beta_Matrix[mains[i],]<-fit_coef[[1]]$mainEffectsCoef$cont[[i]]

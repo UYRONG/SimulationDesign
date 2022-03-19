@@ -148,13 +148,13 @@ generate_data_case_XE<-function(n, p, corr, betaE, SNR, case){
   )
 }
 
-make_XE_data_split<-function(n, p, corr, betaE, SNR, case, parameterIndex, lambda.type){
+make_XE_data_split<-function(n, p, corr, betaE, SNR, case, lambda.type){
   
   new_model(name = "gendata_XE_split",
             label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, case = %s, lambda = %s",
                             n, p, corr, betaE, SNR, case, lambda.type),
-            params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR,
-                          lambda.type = lambda.type, case = case),
+            params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR, case = case,
+                          lambda.type = lambda.type),
             simulate = function(n, p, corr, betaE, SNR, case, lambda.type, nsim) {
               models <- list()
               for(i in seq(nsim)) {
