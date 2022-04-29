@@ -14,6 +14,7 @@ sqrerr <- new_metric("sqrerr", "squared error",
 msevalid <- new_metric("mse", "Validation Set MSE",
                        metric = function(model, out) {
                          # as.numeric(sqrt(crossprod(out$y - out$yhat)))
+# 
                          as.numeric(out$msevalid)
                        })
 
